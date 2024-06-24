@@ -52,8 +52,8 @@ if load_model:
     )
 
     base_model = AutoModelForCausalLM.from_pretrained(
-        base_model_id,  # Llama 2 7B, same as before
-        quantization_config=bnb_config,  # Same quantization config as before
+        base_model_id,
+        quantization_config=bnb_config,
         device_map="cuda",
         trust_remote_code=True,
     )
@@ -141,7 +141,6 @@ def run_test_comparative_numbers(num):
 
 
 def run_model(input_text):
-    # description = "A tall person with very broad shoulders"
     description = input_text
     eval_prompt = "### Description: " + description + "\n ### Shape parameters: "
     model_input = tokenizer(eval_prompt, return_tensors="pt").to("cuda")

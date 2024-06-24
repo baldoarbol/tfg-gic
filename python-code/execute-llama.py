@@ -1,9 +1,7 @@
-# Example: reuse your existing OpenAI setup
 import random
 
 from openai import OpenAI
 
-# Point to the local server
 client = OpenAI(base_url="http://localhost:7654/v1", api_key="not-needed")
 
 import jsonlines
@@ -11,7 +9,7 @@ import jsonlines
 
 def rewording(input_desc, header):
     completion = client.chat.completions.create(
-        model="local-model",  # this field is currently unused
+        model="local-model",
         messages=[
             {"role": "system",
              "content": "Below is an instruction that describes a task. Write a response that appropriately completes the request."},

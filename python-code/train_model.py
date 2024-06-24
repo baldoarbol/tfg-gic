@@ -10,7 +10,6 @@ import smplx_utils as smpllm
 import json
 import re
 
-# Weights of training
 NO_BETAS_FOUND_PENALTY = 2
 W_DEFAULT_LOSS = 0.5
 W_BETAS_LOSS = 1.5
@@ -28,7 +27,7 @@ betas_weight_tensor = torch.tensor(BETAS_WEIGHT, device='cuda')
 
 print("CUDA AVAILABLE: " + str(torch.cuda.is_available()))
 
-# Step 1 - Load Dataset ------------------------------------------------------------------------------------------------
+# Step 1 - CARGAR MODELO BASE ------------------------------------------------------------------------------------------------
 print("[DEB] Starting step 1: Load Dataset")
 
 train_dataset = load_dataset('json', data_files='training_desc.jsonl', split='train')
@@ -40,10 +39,9 @@ def formatting_func(example):
     return text
 
 
-# Step 2 - Load Base Model ---------------------------------------------------------------------------------------------
+# Step 2 - CARGAR MODELO BASE ---------------------------------------------------------------------------------------------
 print("[DEB] Starting step 2: Load Base Model")
 
-# Load Base Model
 #base_model_id = "meta-llama/Llama-2-7b-hf"
 base_model_id = "meta-llama/Meta-Llama-3-8B"
 bnb_config = BitsAndBytesConfig(
@@ -55,7 +53,7 @@ bnb_config = BitsAndBytesConfig(
 
 model = AutoModelForCausalLM.from_pretrained(base_model_id, quantization_config=bnb_config, device_map="cuda")
 
-# Step 3 - Tokenization ------------------------------------------------------------------------------------------------
+# Step 3 - TOKENIZACION ------------------------------------------------------------------------------------------------
 print("[DEB] Starting step 3: Tokenization")
 
 tokenizer = AutoTokenizer.from_pretrained(
@@ -82,7 +80,7 @@ def generate_and_tokenize_prompt2(prompt):
 tokenized_train_dataset = train_dataset.map(generate_and_tokenize_prompt2)
 tokenized_val_dataset = eval_dataset.map(generate_and_tokenize_prompt2)
 
-# Step 4 - Set Up LoRA -------------------------------------------------------------------------------------------------
+# Step 4 - CONFIGURAR LORA -------------------------------------------------------------------------------------------------
 print("[DEB] Starting step 4: Set Up LoRA")
 
 model.gradient_checkpointing_enable()
@@ -100,7 +98,6 @@ def print_trainable_parameters(model):
         f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
     )
 
-# Configure LoRA
 config = LoraConfig(
     r=32,
     lora_alpha=64,
@@ -115,19 +112,18 @@ config = LoraConfig(
         "lm_head",
     ],
     bias="none",
-    lora_dropout=0.05,  # Conventional
+    lora_dropout=0.05,
     task_type="CAUSAL_LM",
 )
 
 model = get_peft_model(model, config)
 
-# Step 4.1 - Custom Error ----------------------------------------------------------------------------------------------
+# Step 4.1 - ERROR PERSONALIZADO ----------------------------------------------------------------------------------------------
 class CustomTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
 
         outputs = model(**inputs)
 
-        # Save past state if it exists
         if self.args.past_index >= 0:
             self._past = outputs[self.args.past_index]
 
@@ -173,12 +169,12 @@ class CustomTrainer(Trainer):
         default_loss_value = loss.item()
         betas_loss_value = betas_loss.item()
         measurements_loss_value = measurements_loss.item()
-        # Merge loss
+        # Mezclar error
         merged_loss = (W_DEFAULT_LOSS * default_loss_value +
                        W_BETAS_LOSS * betas_loss_value +
                        W_MEASUREMENTS_LOSS * measurements_loss_value +
                        NO_BETAS_FOUND_PENALTY * incomplete_betas)
-        # Apply loss
+        # Aplicar error
         loss.data = torch.tensor(merged_loss, device='cuda:0')
 
         # Wandb log
@@ -193,7 +189,7 @@ class CustomTrainer(Trainer):
             wandb.log({"measurements loss_EVAL": measurements_loss_value})
             wandb.log({"incomplete betas penalty_EVAL": (incomplete_betas * NO_BETAS_FOUND_PENALTY)})
 
-        # Print all values
+        # Imprimir todos los valores
         print("DEFAULT_LOSS: " + str(default_loss_value) +
               "\nBETAS LOSS : " + str(betas_loss_value) +
               "\nMEASUREMENTS LOSS : " + str(measurements_loss_value) +
@@ -293,9 +289,9 @@ def measurements_to_categories(measurements, ranges_input):
     return labeled_measures
 
 
-# Step 5 - Run Training ------------------------------------------------------------------------------------------------
+# Step 5 - LANZAR ENTRENAMIENTO ------------------------------------------------------------------------------------------------
 print("[DEB] Starting step 5: Run Training")
-if torch.cuda.device_count() > 1:  # If more than 1 GPU
+if torch.cuda.device_count() > 1:
     model.is_parallelizable = True
     model.model_parallel = True
 
@@ -306,7 +302,7 @@ output_dir = "./" + run_name
 
 tokenizer.pad_token = tokenizer.eos_token
 
-# Configure Training
+# Configurar entrenamiento
 trainer = CustomTrainer(
     model=model,
     train_dataset=tokenized_train_dataset,

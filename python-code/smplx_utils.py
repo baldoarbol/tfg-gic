@@ -70,7 +70,6 @@ measurements_to_export = [
     Measurement.LEG_THICKNESS,
     Measurement.BUST_THICKNESS,
     Measurement.WAIST_THICKNESS,
-    # Measurement.HIP_THICKNESS
 ]
 
 # Vértices implicados en las medidas de tipo "vertex distance"
@@ -276,7 +275,7 @@ def print_evaluation_debug(model, vertices, ranges):
             print(str(measurement_.value) + ": " + str(value) + " - " + evaluation)
 
 
-def get_evaluation_batch(model, vertices, ranges):  #Only to dataset generation
+def get_evaluation_batch(model, vertices, ranges):
     evaluation_dict = {}  # Diccionario de tensores, cada tensor almacena N medidas de tipo measurement_
     measurement_values = get_measurements_batch(model, vertices).transpose(0, 1)
     i = 0
@@ -326,10 +325,8 @@ def get_evaluation_vector_expanded(betas, ranges):
 def vector_to_one_hot(matrix, num_classes):
     max_value = num_classes
     one_hot_matrix = torch.zeros((matrix.size(1), max_value), device="cuda")
-    #en batches: one_hot_matrix = torch.zeros((matrix.size(0), matrix.size(1), max_value))
     matrix = matrix.long()
     one_hot_matrix.scatter_(1, matrix, 1)
-    #en batches: one_hot_matrix.scatter_(2, matrix.unsqueeze(2), 1)
     return one_hot_matrix
 
 
@@ -423,8 +420,8 @@ def render_avatar(vertices, model, texture_path=None):
     scene.show(
         viewer='gl',
         resolution=(600, 600),
-        background=[0.7, 0.7, 0.7, 1.0],  # Light gray background
-        window_title='Model Render'  # Set window title
+        background=[0.7, 0.7, 0.7, 1.0],  
+        window_title='Model Render' 
     )
 
 """
@@ -466,21 +463,15 @@ def get_measurement_distance(vertices, measurement):
 def get_measurement_volume(model, vertices):
     faces = torch.tensor(model.faces.astype(np.int32), dtype=torch.int32, device='cuda')
 
-    # Gather the vertices corresponding to each face for all meshes
     face_vertices = vertices[:, faces]
 
-    # Calculate vectors for two edges of each triangle face
     edge1 = face_vertices[:, :, 1] - face_vertices[:, :, 0]
     edge2 = face_vertices[:, :, 2] - face_vertices[:, :, 0]
 
-    # Calculate the normal vector for each face using the cross product
     normals = torch.cross(edge1, edge2, dim=2)
 
-    # Calculate the signed volume of the tetrahedron formed by the face and the origin
-    # The volume of a tetrahedron is (1/6)*dot(normal, vertex), using any vertex from the face
     volumes = torch.einsum('bfi,bfi->b', normals, face_vertices[:, :, 0]) / 6.0
 
-    # The volume can be negative based on the winding order of the faces; take the absolute
     return torch.abs(volumes)
 
 
@@ -510,7 +501,6 @@ def get_measurement_thickness(vertices, measurement):
 
     thickness = torch.cat((norm_distance_1, norm_distance_2), dim=1)
     thickness = torch.sum(thickness, dim=1)
-    #thickness = torch.norm(distance_1) + torch.norm(distance_2)
 
     return thickness
 
