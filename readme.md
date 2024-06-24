@@ -10,6 +10,7 @@ Universidad Rey Juan Carlos - Escuela Técnica Superior de Ingeniería Informát
 Los modelos generativos de inteligencia artificial, como los Modelos de Lenguaje de Gran Escala (LLMs), pueden ejecutar tareas complejas rápidamente y generar textos diversos. Este proyecto investiga el uso de un LLM reentrenado para identificar descripciones físicas y crear avatares precisos con el modelo SMPL-X, mejorando la interacción humano-máquina y permitiendo personalización en entornos virtuales.
 
 ## Lista de Dependencias
+Lista de librerías y dependencias del proyecto (ver archivo requirements_tfg_gic.txt):
 ```
 accelerate==0.30.0
 aiohttp==3.9.5
