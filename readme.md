@@ -1,4 +1,4 @@
-# Trabajo Fin de Grado - Ingeniería de Computadores
+# Trabajo Fin de Grado - Grado en Ingeniería de Computadores
 Universidad Rey Juan Carlos - Escuela Técnica Superior de Ingeniería Informática
 
 **Entrenamiento de red neuronal para generación de avatares humanos a partir de lenguaje natural**
