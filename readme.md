@@ -12,6 +12,8 @@ Los modelos generativos de inteligencia artificial, como los Modelos de Lenguaje
 ## Lista de Dependencias
 Lista de librerías y dependencias del proyecto (ver archivo requirements_tfg_gic.txt):
 ```
+SMPL-X para Python: https://smpl-x.is.tue.mpg.de/download.php
+
 accelerate==0.30.0
 aiohttp==3.9.5
 aiosignal==1.3.1
